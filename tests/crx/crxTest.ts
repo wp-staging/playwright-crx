@@ -36,6 +36,7 @@ type CrxFixtures = {
   crxApp: CrxApplication;
   server: CrxServer;
   _debug: Debug;
+  _fs: typeof fs;
 }
 
 type Debug = {

@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import { crx, expect, _debug } from 'playwright-crx/test';
+import { crx, expect, _debug, _fs } from 'playwright-crx/test';
 
 const _crxAppPromise = crx.start();
 
@@ -24,7 +24,7 @@ async function _runTest(fn: (params: any) => Promise<void>, params: any) {
   expect(tab?.id).toBeTruthy();
   const page = await crxApp.attach(tab?.id!);
   try {
-    await fn({ expect, page, context, crxApp, _debug, ...params });
+    await fn({ expect, page, context, crxApp, _debug, _fs, ...params });
   } catch (e: any) {
     debugger;
     throw e instanceof Error ? e : new Error(e?.message);

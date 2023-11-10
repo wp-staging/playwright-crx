@@ -14,6 +14,7 @@
  * limitations under the License.
  */
 
+import type fs from 'fs';
 import type { Crx } from './src/types/types';
 export * from './src/types/types';
 
@@ -24,3 +25,4 @@ export const _debug: {
   enabled(namespaces: string): boolean;
   disable(): void;
 };
+export const _fs: typeof fs;
