@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+import { expect } from '@playwright/test';
 import { test } from './crxTest';
 
 type Tab = chrome.tabs.Tab;
@@ -181,4 +182,44 @@ test('should report oopif frames', async ({ runCrxTest, browserMajorVersion }) =
     expect(page.frames().length).toBe(2);
     expect(await page.frames()[1].evaluate(() => '' + location.href)).toBe(server.CROSS_PROCESS_PREFIX + '/grid.html');
   });
+});
+
+test('should trace', async ({ page, runCrxTest }, testInfo) => {
+  await runCrxTest(async ({ page, context, _fs }) => {
+    await context.tracing.start({ snapshots: true, screenshots: true, sources: true });
+    await page.goto('https://demo.playwright.dev/todomvc/#/');
+    await page.getByPlaceholder('What needs to be done?').fill('Playwright CRX rocks!');
+    await page.getByPlaceholder('What needs to be done?').press('Enter');
+    await page.getByLabel('Toggle Todo').click();
+    await page.getByRole('button', { name: 'Clear completed' }).click();
+    await context.tracing.stop({ path: '/crx/trace.zip' });
+
+    const traceFile = await _fs.promises.readFile('/crx/trace.zip');
+
+    await page.setContent(`
+      <a href="data:application/zip;base64,${traceFile.toString('base64')}" download="trace.zip">Download trace</a>
+    `);
+  });
+
+  const [download] = await Promise.all([
+    page.waitForEvent('download'),
+    page.getByRole('link', { name: 'Download trace' }).click(),
+  ]);
+  const traceFile = testInfo.outputPath('trace.zip');
+  await download.saveAs(traceFile);
+
+  await page.goto('https://trace.playwright.dev/');
+  const [fileChooser] = await Promise.all([
+    page.waitForEvent('filechooser'),
+    page.getByRole('button', { name: 'Select file(s)' }).click(),
+  ]);
+  await fileChooser.setFiles(traceFile);
+  
+  await expect(page.getByTestId('actions-tree').locator('.action-title > span')).toHaveText([
+    'page.goto',
+    'locator.fill',
+    'locator.press',
+    'locator.click',
+    'locator.click',
+  ]);
 });

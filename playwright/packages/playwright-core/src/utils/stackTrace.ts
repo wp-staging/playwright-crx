@@ -29,7 +29,7 @@ export function rewriteErrorMessage<E extends Error>(e: E, newMessage: string): 
   return e;
 }
 
-const CORE_DIR = path.resolve(__dirname, '..', '..');
+const CORE_DIR = '/playwright/packages/playwright-core';
 
 const internalStackPrefixes = [
   CORE_DIR,
@@ -48,7 +48,9 @@ export function captureRawStack(): RawStack {
 }
 
 export function captureLibraryStackTrace(): { frames: StackFrame[], apiName: string } {
-  const stack = captureRawStack();
+  const rawStack = captureRawStack();
+  const stacktraceSourcemap = (self as any)?._stacktraceSourcemap;
+  const stack: string[] = stacktraceSourcemap?.processSourceMaps(rawStack) ?? rawStack;
 
   const isTesting = isUnderTest();
   type ParsedFrame = {

@@ -18,9 +18,15 @@ import './process';
 import './setImmediate';
 import './buffer';
 import { fs } from 'memfs';
+import { stacktraceSourcemap } from '../utils/stacktraceSourcemap';
 
 fs.mkdirSync('/tmp');
 fs.mkdirSync('/crx');
 
 self.global = self;
 self.__dirname = '/crx';
+
+stacktraceSourcemap.register(chrome.runtime.getURL('playwright-crx/test.mjs')).catch(() => {});
+
+// @ts-ignore
+self._stacktraceSourcemap = stacktraceSourcemap;

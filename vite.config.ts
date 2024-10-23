@@ -15,7 +15,6 @@
  */
 
 import path from 'path';
-import sourcemaps from 'rollup-plugin-sourcemaps';
 import { defineConfig } from 'vite';
 import requireTransform from 'vite-plugin-require-transform';
 
@@ -94,6 +93,9 @@ export default defineConfig({
       'node:events': path.resolve(__dirname, './node_modules/events'),
       'node:stream': path.resolve(__dirname, './node_modules/readable-stream'),
       'node:string_decoder': path.resolve(__dirname, './node_modules/string_decoder'),
+
+      // to work with service workers
+      '../lib/read-wasm': path.resolve(__dirname, './src/shims/source-map/read-wasm'),
     },
   },
   define: {
@@ -103,16 +105,13 @@ export default defineConfig({
     outDir: path.resolve(__dirname, './lib/'),
     // skip code obfuscation
     minify: false,
+    sourcemap: true,
     lib: {
+      name: 'test',
       entry: {
-        index: path.resolve(__dirname, 'src/index.ts'),
+        // index: path.resolve(__dirname, 'src/index.ts'),
         test: path.resolve(__dirname, 'src/test.ts'),
       },
-    },
-    sourcemap: true,
-    rollupOptions: {
-      // @ts-ignore
-      plugins: [sourcemaps()],
     },
     commonjsOptions: {
       include: [

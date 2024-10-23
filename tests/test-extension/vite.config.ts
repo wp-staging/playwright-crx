@@ -14,19 +14,28 @@
  * limitations under the License.
  */
 
+import fs from 'fs';
 import path from 'path';
 import { defineConfig } from 'vite';
-import sourcemaps from 'rollup-plugin-sourcemaps';
 
 // https://vitejs.dev/config/
 export default defineConfig({
+  plugins: [{
+    name: 'copy playwright-crx',
+    closeBundle: () => {
+      fs.mkdirSync(path.resolve(__dirname, 'dist/playwright-crx'), { recursive: true });
+      fs.copyFileSync(path.resolve(__dirname, '../../lib/test.mjs'), path.resolve(__dirname, 'dist/playwright-crx/test.mjs'));
+      fs.copyFileSync(path.resolve(__dirname, '../../lib/test.mjs.map'), path.resolve(__dirname, 'dist/playwright-crx/test.mjs.map'));
+    },
+    transform: (code) => {
+      return code.replace('playwright-crx/test', './playwright-crx/test.mjs');
+    },
+  }],
   build: {
     // code cannot be obfuscated
     minify: false,
     sourcemap: true,
     rollupOptions: {
-      // @ts-ignore
-      plugins: [sourcemaps()],
       input: {
         'background': path.resolve(__dirname, 'src/background.ts'),
       },
@@ -35,6 +44,7 @@ export default defineConfig({
         chunkFileNames: '[name].js',
         assetFileNames: '[name].[ext]',
       },
+      external: ['./playwright-crx/test.mjs'],
     },
   },
 });

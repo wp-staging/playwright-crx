@@ -6,5 +6,8 @@
     "service_worker": "background.js",
     "type": "module"
   },
-  "permissions": ["debugger", "tabs"]
+  "permissions": ["debugger", "tabs", "downloads"],
+  "content_security_policy": {
+    "extension_pages": "default-src 'wasm-unsafe-eval'"
+  }
 }
